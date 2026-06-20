@@ -75,7 +75,7 @@
         let scanTimer; let isScanning = false; let verifiedUser = "";
 
         // 📝 قائمة الأعضاء الرسمية والمشتركة للكل (عدل رتبة خويك هنا مباشرة)
-        if (!localStorage.getItem('fbiUsersList')) {
+        if (!localStorage.getItem('fbiUsersList_V3')) {
             const defaultUsers = [
                 { username: "sherlock", pass: "221b", rank: "Detective commander" },
                 { username: "ahmed", pass: "fbi2026", rank: "detective member" },
@@ -83,7 +83,7 @@
                 { username: "abdullah", pass: "7788", rank: "detective member" },
                 { username: "اسم_خويك", pass: "1234", rank: "debuty detective commander" } // 👈 عدل هذا السطر ببيانات خويك
             ];
-            localStorage.setItem('fbiUsersList', JSON.stringify(defaultUsers));
+            localStorage.setItem('fbiUsersList_V3', JSON.stringify(defaultUsers));
         }
 
         window.onload = function() {
