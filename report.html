@@ -18,9 +18,9 @@
 
     <div id="secureContent" style="display:none;">
         <div class="nav">
-            <a href="index.html"><button>الرئيسية والقضايا</button></a>
-            <a href="report.html"><button>رفع تقرير</button></a>
-            <a href="wanted.html"><button>سجل المطلوبين</button></a>
+            <a href="index.html"><button>الرئيسية</button></a>
+            <a href="tasks.html"><button>إدارة المهام</button></a>
+            <a href="report.html"><button style="background:#fff; color:#000;">رفع تقرير</button></a>
         </div>
 
         <h2>رفع تقرير وأدلة قضية</h2>
@@ -41,34 +41,39 @@
 
     <script>
         window.onload = function() {
-            // حماية الصفحة: إذا مو مسجل دخول يطرده للرئيسية
-            if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+            // تصحيح: استخدام localStorage لضمان استمرار الجلسة
+            if (localStorage.getItem('isLoggedIn') !== 'true') {
                 alert("🔒 يجب تسجيل الدخول أولاً!");
                 window.location.href = "index.html";
             } else {
                 document.getElementById('secureContent').style.display = 'block';
+                // ملء اسم المحقق تلقائياً
+                document.getElementById('rName').value = localStorage.getItem('username');
                 loadReports();
             }
         };
 
         function sendAndSave() {
-            const webhook = 'ضع_رابط_الـ_WEBHOOK_هنا'; /* حط رابط الويب هوك حقك هنا */
+            const webhook = 'ضع_رابط_الـ_WEBHOOK_هنا'; 
             let name = document.getElementById('rName').value.trim();
             let caseNum = document.getElementById('rCaseNum').value.trim();
             let details = document.getElementById('rDetails').value.trim();
             let evidence = document.getElementById('rEvidence').value.trim();
 
             if(!name || !caseNum || !details) { alert("الرجاء تعبئة جميع الحقول!"); return; }
+            
+            // تحقق من وجود القضية في الأرشيف
             let cases = JSON.parse(localStorage.getItem('casesList')) || [];
             if (!cases.some(c => c.id == caseNum)) { alert(`❌ خطأ: لا توجد قضية برقم #${caseNum}!`); return; }
 
+            // إرسال للديسكورد
             if(webhook !== 'ضع_رابط_الـ_WEBHOOK_هنا') {
                 fetch(webhook, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         embeds: [{
-                            title: "🚨 تقرير جنائي جديد مربوط بقضية",
+                            title: "🚨 تقرير جنائي جديد",
                             fields: [
                                 {name: "👤 المحقق:", value: name},
                                 {name: "📂 ملف القضية:", value: `#${caseNum}`},
@@ -80,11 +85,12 @@
                 });
             }
 
-            let reports = JSON.parse(localStorage.getItem('reportsList')) || [];
+            let reports = JSON.parse(localStorage.getItem('reportsList') || "[]");
             reports.push({ name: name, caseNum: caseNum, details: details, evidence: evidence || "لا يوجد" });
             localStorage.setItem('reportsList', JSON.stringify(reports));
             loadReports();
-            document.getElementById('rName').value = '';
+            
+            // تنظيف الحقول
             document.getElementById('rCaseNum').value = '';
             document.getElementById('rDetails').value = '';
             document.getElementById('rEvidence').value = '';
@@ -92,14 +98,14 @@
         }
 
         function loadReports() {
-            let reports = JSON.parse(localStorage.getItem('reportsList')) || [];
+            let reports = JSON.parse(localStorage.getItem('reportsList') || "[]");
             let tbody = document.getElementById('rBody');
             tbody.innerHTML = "";
             reports.forEach((r, index) => {
                 let evLink = r.evidence.startsWith('http') ? `<a href="${r.evidence}" target="_blank" style="color:#d4af37">فتح الدليل</a>` : r.evidence;
                 tbody.innerHTML += `<tr>
                     <td><b>${r.name}</b></td>
-                    <td><a href="index.html" class="case-link">ملف #${r.caseNum}</a></td>
+                    <td><span class="case-link">ملف #${r.caseNum}</span></td>
                     <td>${r.details}</td>
                     <td>${evLink}</td>
                     <td><button class="del" onclick="deleteReport(${index})">مسح</button></td>
@@ -108,7 +114,7 @@
         }
 
         function deleteReport(index) {
-            let reports = JSON.parse(localStorage.getItem('reportsList')) || [];
+            let reports = JSON.parse(localStorage.getItem('reportsList') || "[]");
             reports.splice(index, 1);
             localStorage.setItem('reportsList', JSON.stringify(reports));
             loadReports();
