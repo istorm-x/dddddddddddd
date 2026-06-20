@@ -48,14 +48,15 @@
     </div>
 
     <script>
+        const DB_KEY = 'fbiUsersList_V3'; // المفتاح الموحد الجديد
         let currentUser = (localStorage.getItem('username') || "").trim().toLowerCase();
-        let usersList = JSON.parse(localStorage.getItem('fbiUsersList')) || [];
+        let usersList = JSON.parse(localStorage.getItem(DB_KEY)) || [];
         let myAccount = usersList.find(u => u.username.toLowerCase() === currentUser);
         let isLeader = myAccount && (myAccount.rank === "Detective commander" || myAccount.rank === "debuty detective commander");
 
         window.onload = function() {
             if (localStorage.getItem('isLoggedIn') !== 'true' || !myAccount) {
-                alert("🔒 يجب تسجيل الدخول أولاً عبر الصفحة الرئيسية!");
+                alert("🔒 يجب تسجيل الدخول أولاً!");
                 window.location.href = "index.html";
             } else {
                 checkPermissions();
@@ -80,9 +81,7 @@
             let select = document.getElementById('agentSelect'); if (!select) return;
             select.innerHTML = `<option value="" disabled selected> اختر الفرد المسؤول... </option>`;
             usersList.forEach(user => {
-                if (user.username !== "sherlock") {
-                    select.innerHTML += `<option value="${user.username}">👤 ${user.username} (${user.rank})</option>`;
-                }
+                select.innerHTML += `<option value="${user.username}">👤 ${user.username} (${user.rank})</option>`;
             });
         }
 
@@ -95,8 +94,6 @@
             let boards = JSON.parse(localStorage.getItem('fbiBoards')) || [];
             boards.push({ id: Date.now(), agent: agent, mission: mission, details: [] });
             localStorage.setItem('fbiBoards', JSON.stringify(boards));
-            document.getElementById('agentSelect').selectedIndex = 0;
-            document.getElementById('mainMission').value = '';
             loadBoards();
         }
 
