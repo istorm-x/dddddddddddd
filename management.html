@@ -19,11 +19,9 @@
 
     <div id="secureContent">
         <div class="nav">
-            <a href="index.html"><button>الرئيسية والقضايا</button></a>
+            <a href="index.html"><button>الرئيسية</button></a>
             <a href="tasks.html"><button>إدارة المهام</button></a>
             <a href="management.html"><button style="background: #fff; color: black;">شؤون الضباط ⚙️</button></a>
-            <a href="report.html"><button>رفع تقرير</button></a>
-            <a href="wanted.html"><button>سجل المطلوبين</button></a>
         </div>
 
         <h2 style="color: #d4af37; margin-top: 25px;">🛑 القيادة العليا - شؤون الضباط</h2>
@@ -47,20 +45,26 @@
     </div>
 
     <script>
+        const DB_KEY = 'fbiUsersList_V3'; // المفتاح الموحد
         let currentUser = (localStorage.getItem('username') || "").trim().toLowerCase();
-        let usersList = JSON.parse(localStorage.getItem('fbiUsersList')) || [];
-        let myAccount = usersList.find(u => u.username.toLowerCase() === currentUser);
-        let isLeader = myAccount && (myAccount.rank === "Detective commander" || myAccount.rank === "debuty detective commander");
-
+        
+        // التحقق من الصلاحيات
         window.onload = function() {
+            let usersList = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+            let myAccount = usersList.find(u => u.username.toLowerCase() === currentUser);
+            let isLeader = myAccount && (myAccount.rank === "Detective commander" || myAccount.rank === "debuty detective commander");
+
             if (localStorage.getItem('isLoggedIn') !== 'true' || !isLeader) {
-                alert("⛔ صلاحية مرفوضة!"); window.location.href = "tasks.html";
-            } else { loadRankTable(); }
+                alert("⛔ صلاحية مرفوضة!"); 
+                window.location.href = "tasks.html";
+            } else { 
+                loadRankTable(); 
+            }
         };
 
         function loadRankTable() {
             let tbody = document.getElementById('rankTableBody'); tbody.innerHTML = "";
-            let savedUsers = JSON.parse(localStorage.getItem('fbiUsersList')) || [];
+            let savedUsers = JSON.parse(localStorage.getItem(DB_KEY)) || [];
 
             savedUsers.forEach((user, index) => {
                 let isRoot = user.username.toLowerCase() === "sherlock";
@@ -88,32 +92,29 @@
             let rank = document.getElementById('newUserRank').value;
             if (!name || !pass) return;
 
-            let savedUsers = JSON.parse(localStorage.getItem('fbiUsersList')) || [];
-            
+            let savedUsers = JSON.parse(localStorage.getItem(DB_KEY)) || [];
             if(savedUsers.some(user => user.username.toLowerCase() === name)) {
-                alert("❌ هذا الفرد مضاف مسبقاً بالتنظيم!");
+                alert("❌ هذا الفرد مضاف مسبقاً!");
                 return;
             }
 
             savedUsers.push({ username: name, pass: pass, rank: rank });
-            localStorage.setItem('fbiUsersList', JSON.stringify(savedUsers));
-            
-            document.getElementById('newUserName').value = '';
-            document.getElementById('newUserPass').value = '';
+            localStorage.setItem(DB_KEY, JSON.stringify(savedUsers));
             loadRankTable();
         }
 
         function changeRankViaDropdown(userIndex, newRank) {
-            let savedUsers = JSON.parse(localStorage.getItem('fbiUsersList')) || [];
+            let savedUsers = JSON.parse(localStorage.getItem(DB_KEY)) || [];
             if (savedUsers[userIndex].username.toLowerCase() === "sherlock") return;
             savedUsers[userIndex].rank = newRank;
-            localStorage.setItem('fbiUsersList', JSON.stringify(savedUsers));
+            localStorage.setItem(DB_KEY, JSON.stringify(savedUsers));
             loadRankTable();
         }
 
         function deleteUser(index) {
-            let savedUsers = JSON.parse(localStorage.getItem('fbiUsersList')) || [];
-            savedUsers.splice(index, 1); localStorage.setItem('fbiUsersList', JSON.stringify(savedUsers));
+            let savedUsers = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+            savedUsers.splice(index, 1); 
+            localStorage.setItem(DB_KEY, JSON.stringify(savedUsers));
             loadRankTable();
         }
     </script>
